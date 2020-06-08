@@ -1,15 +1,12 @@
 
 import 'package:flutter/cupertino.dart';
-import 'dart:io' show File, Platform;
-import 'package:flutter/services.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'dart:convert';
+import 'package:insave/Utility/Utils.dart';
 import 'package:insave/models/Post.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:dio/dio.dart';
+import 'package:insave/Networking/Networking.dart';
+import 'package:insave/Utility/PermissionServices.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'dart:io' show Platform;
 
 class Dashboard extends StatefulWidget {
 
@@ -18,57 +15,97 @@ class Dashboard extends StatefulWidget {
 }
 
 class DashboardState extends State<Dashboard>  {
-  Dio dio = new Dio();
+  
+  String buttonTitle = "";
+  
+  @override
+  void initState() {
+    buttonTitle = "Paste URL here";
+    super.initState();
+  }
+ 
   final Shader linearGradient = LinearGradient(
     colors: <Color>[Color(0xffF58529), Color(0xffDD2A7B), Color(0xff8134AF), Color(0xff515BD4)])
     .createShader(Rect.fromLTWH(0.0, 0.0, 300.0, 70.0)
   );
-
-  Future<Post> fetchPost(String urlString) async {
-    final response = await dio.get(urlString);
-    if (response.statusCode == 200) {
-      return Post.fromJson(json.decode(response.toString()));
-    } else {
-      throw Exception('Failed to load post');
-    }
-  }
   
-  _saveImage(String imageURL) async {
-    var response = await Dio().get(imageURL, options: Options(responseType: ResponseType.bytes));
-    final result = await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
-    print(result);
-  }
-  
-  _downloadFile(String url) async {
-    final timeStamp = new DateTime.now().millisecondsSinceEpoch;
-    var appDocDir = await getTemporaryDirectory();
-    String savePath = appDocDir.path + "$timeStamp.mp4";
-    await Dio().download(url, savePath);
-    final result = await ImageGallerySaver.saveFile(savePath);
-    print(result);
-  }
+  void _identifyImageOrVideo(String url) async {
+    
+    List<String> urlParts = url.split('?').toList();
+    if (urlParts.length != 0) {
+      String finalURL = urlParts.first + "?__a=1";
+      try {
+        Post post = await Networking().fetchPost(finalURL);
+        String videoURL = post.graphql.shortcodeMedia.videoUrl;
+        
+        //Check permission
+        final permission = await PermissionService().requestStoragePermission();
+        if(permission) {
+          if ((videoURL?.isEmpty ?? true) || videoURL == null) {
+            changeButtonTitle("Downloading...");
+            final result = await Networking().saveImage(post.graphql.shortcodeMedia.displayUrl);
+            changeButtonTitle("Paste URL here");
+            _showShortTermAlert(context, result.isEmpty ? "Failed to save image." : "Image saved successfully.");
+          } else {
+            changeButtonTitle("Downloading...");
+            final result = await Networking().downloadFile(videoURL);
+            changeButtonTitle("Paste URL here");
+            _showShortTermAlert(context, result.isEmpty ? "Failed to save image." : "Video saved successfully.");
+          }
+        } else {
+          Utils.showOSWiseAlert(context, "Permission denied. Please allow access from Settings.");
+        }
 
-void _identifyImageOrVideo(String url) async {
-
-  List<String> urlParts = url.split('?').toList();
-  if (urlParts.length != 0) {
-    String finalURL = urlParts.first + "?__a=1";
-    try {
-      Post post = await fetchPost(finalURL);
-      String videoURL = post.graphql.shortcodeMedia.videoUrl;
-      if ((videoURL?.isEmpty ?? true) || videoURL == null) {
-        print("This is image");
-        _saveImage(post.graphql.shortcodeMedia.displayUrl);
-      } else {
-        _downloadFile(videoURL);
+      } catch (error) {
+        Utils.showOSWiseAlert(context, error.toString());
       }
-    } catch (error) {
-      print(error);
+    } else {
+      Utils.showOSWiseAlert(context, "Invalid URL");
+    }  
+  }
+  
+  void changeButtonTitle(String title) {
+    setState(() {
+      buttonTitle = title;
+    });
+  }
+
+  void _showShortTermAlert(BuildContext  context, String title) {
+    if (Platform.isAndroid) {
+      showToast(context, title);
+    } else if (Platform.isIOS) {
+      Utils.showIOSShortTimeAlert(context, title);
     }
-  } else {
-    print("Invalid Url");
-  }  
-}
+  }
+
+  void _pasteLinkButtonDidTap() async {
+    if (buttonTitle == "Downloading...") {
+      return;
+    }
+    String urlString = await Utils().getClipBoardData();
+    if (urlString.isEmpty || urlString == null) {
+      Utils.showOSWiseAlert(context, "URL not found.");
+    } else {
+      RegExp re = RegExp(r'^https://(www.)?instagram.com/.*/');
+      if (re.hasMatch(urlString)) {
+        _identifyImageOrVideo(urlString);
+      } else {
+        Utils.showOSWiseAlert(context, "Invalid URL.");
+      }
+    }
+  }
+
+  static showToast(BuildContext context, String title) {
+    Fluttertoast.showToast(
+        msg: title,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
 
   @override 
   Widget build(BuildContext context) {
@@ -89,18 +126,8 @@ void _identifyImageOrVideo(String url) async {
               child: Container(
                 height: 60.0,
                 child: RaisedButton(
-                  onPressed: () async {
-                    String urlString = await Utils().getClipBoardData();
-                    if (urlString.isEmpty || urlString == null) {
-                      Utils.showAlert(context, "URL not found.");
-                    } else {
-                      RegExp re = RegExp(r'^https://(www.)?instagram.com/.*/');
-                      if (re.hasMatch(urlString)) {
-                        _identifyImageOrVideo(urlString);
-                      } else {
-                        Utils.showAlert(context, "Invalid URL.");
-                      }
-                    }
+                  onPressed: () {
+                    _pasteLinkButtonDidTap();
                   },
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
                    padding: EdgeInsets.all(0.0),
@@ -117,7 +144,7 @@ void _identifyImageOrVideo(String url) async {
                         height: 60.0,
                         alignment: Alignment.center,
                         child: Text(
-                          "Paste link here",
+                          buttonTitle,
                           textAlign: TextAlign.center,style: TextStyle(fontSize: 25, color: Colors.white),
                         ),
                       ),
@@ -132,68 +159,5 @@ void _identifyImageOrVideo(String url) async {
   }
 }
 
-class PermissionService {
-  var permission = Platform.isAndroid ? Permission.storage : Permission.photos;
 
-  Future<bool> requestStoragePermission({Function onPermissionDenied}) async {
-    var granted = await _requestPermission(permission);
-    if (!granted) {
-      onPermissionDenied();
-    }
-    return granted;
-  }
 
-   Future<bool> _requestPermission(Permission permission) async {
-    var result = await permission.request();
-    if (result == PermissionStatus.granted) {
-      return true;
-    }
-    return false;
-  }
-}
-
-class Utils {
-  
-  Future<String> getClipBoardData() async {
-    ClipboardData data = await Clipboard.getData(Clipboard.kTextPlain);
-    return data.text != null ? data.text : "";
-  }
-
-  static showAlert(BuildContext context, String title) {
-    
-    if (Platform.isAndroid) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("InstaSaver"),
-            content: Text(title),
-            actions: [
-              FlatButton(
-                child: Text("OK"),
-                onPressed: () { 
-                  Navigator.pop(context);
-                },
-              )],
-          );
-        });
-    } else if (Platform.isIOS) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) => new CupertinoAlertDialog(
-          title: new Text("InstaSaver"),
-          content: new Text(title),
-          actions: [
-            CupertinoDialogAction(
-              isDefaultAction: true, 
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      );
-    }
-  }
-}
