@@ -22,6 +22,3 @@ Download images and videos from Instagram.
 
 Vinod, vinod.jagtap@hotmail.com
 
-## License
-
-Instasaver is available under the MIT license. See the LICENSE file for more info.
