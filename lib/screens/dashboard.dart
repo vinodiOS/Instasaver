@@ -35,28 +35,29 @@ class DashboardState extends State<Dashboard>  {
     if (urlParts.length != 0) {
       String finalURL = urlParts.first + "?__a=1";
       try {
+        changeButtonTitle("Downloading...");
         Post post = await Networking().fetchPost(finalURL);
         String videoURL = post.graphql.shortcodeMedia.videoUrl;
-        
+        print("Post:$post");
         //Check permission
         final permission = await PermissionService().requestStoragePermission();
         if(permission) {
           if ((videoURL?.isEmpty ?? true) || videoURL == null) {
-            changeButtonTitle("Downloading...");
             final result = await Networking().saveImage(post.graphql.shortcodeMedia.displayUrl);
             changeButtonTitle("Paste URL here");
             _showShortTermAlert(context, result.isEmpty ? "Failed to save image." : "Image saved successfully.");
           } else {
-            changeButtonTitle("Downloading...");
             final result = await Networking().downloadFile(videoURL);
             changeButtonTitle("Paste URL here");
             _showShortTermAlert(context, result.isEmpty ? "Failed to save image." : "Video saved successfully.");
           }
         } else {
+          changeButtonTitle("Paste URL here");
           Utils.showOSWiseAlert(context, "Permission denied. Please allow access from Settings.");
         }
 
       } catch (error) {
+        changeButtonTitle("Paste URL here");
         Utils.showOSWiseAlert(context, error.toString());
       }
     } else {
@@ -101,7 +102,7 @@ class DashboardState extends State<Dashboard>  {
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.grey,
         textColor: Colors.white,
         fontSize: 16.0
     );
