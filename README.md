@@ -6,11 +6,10 @@ Download images and videos from Instagram.
 ### Screenshots
 
 - iOS
-<img src="https://user-images.githubusercontent.com/30258541/84106523-027fa900-aa39-11ea-8de0-015e8bf55a8d.png" alt="iOS Screenshot">
+![iOS screenshot](https://user-images.githubusercontent.com/30258541/84116363-4e3c4d80-aa4d-11ea-8884-778eeff84c68.png)
 
 - android
-<img src="https://user-images.githubusercontent.com/30258541/84112330-2a293e00-aa46-11ea-9ccf-dd1a40c73d5b.png" alt="android Screenshot">
-
+![android screenshot](https://user-images.githubusercontent.com/30258541/84116371-54322e80-aa4d-11ea-9448-2ce42452ff44.png)
 
 ### Installation (Visual Studio Code)
 
