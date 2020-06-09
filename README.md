@@ -9,7 +9,7 @@ Download images and videos from Instagram.
 ![iOS Screenshot](https://user-images.githubusercontent.com/30258541/84106523-027fa900-aa39-11ea-8de0-015e8bf55a8d.png)
 
 - android
-![android Screenshot](https://user-images.githubusercontent.com/30258541/84106632-4f637f80-aa39-11ea-8e71-b1cd38764717.png)
+![android Screenshot](https://user-images.githubusercontent.com/30258541/84112330-2a293e00-aa46-11ea-9ccf-dd1a40c73d5b.png)
 
 
 ### Installation (Visual Studio Code)
@@ -18,7 +18,7 @@ Download images and videos from Instagram.
 2. Go to View -> Command Pallete -> Clean Project
 3. Then View -> Command Pallete -> Get Packages
 
-## Author
+### Author
 
 Vinod, vinod.jagtap@hotmail.com
 
