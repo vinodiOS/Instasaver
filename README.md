@@ -24,4 +24,4 @@ Vinod, vinod.jagtap@hotmail.com
 
 ## License
 
-SwiftQRScanner is available under the MIT license. See the LICENSE file for more info.
+Instasaver is available under the MIT license. See the LICENSE file for more info.
