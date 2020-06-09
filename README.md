@@ -1,5 +1,5 @@
 
-# Instasaver
+# InstaSaver
 
 Download images and videos from Instagram.
 
