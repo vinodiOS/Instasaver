@@ -1,4 +1,6 @@
 PODS:
+  - ext_storage (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - fluttertoast (0.0.2):
     - Flutter
@@ -14,6 +16,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - ext_storage (from `.symlinks/plugins/ext_storage/ios`)
   - Flutter (from `Flutter`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
@@ -23,6 +26,8 @@ DEPENDENCIES:
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
 
 EXTERNAL SOURCES:
+  ext_storage:
+    :path: ".symlinks/plugins/ext_storage/ios"
   Flutter:
     :path: Flutter
   fluttertoast:
@@ -39,6 +44,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler/ios"
 
 SPEC CHECKSUMS:
+  ext_storage: 4eaf3a84d5594106e2ebcc2502248cfde53c8fa1
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   fluttertoast: b644586ef3b16f67fae9a1f8754cef6b2d6b634b
   image_gallery_saver: 73b3cd8ad9c950c739878af9c311744d1bf5405d

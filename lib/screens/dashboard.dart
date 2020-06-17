@@ -7,6 +7,7 @@ import 'package:insave/Networking/Networking.dart';
 import 'package:insave/Utility/PermissionServices.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:io' show Platform;
+import 'downloads.dart';
 
 class Dashboard extends StatefulWidget {
 
@@ -15,13 +16,14 @@ class Dashboard extends StatefulWidget {
 }
 
 class DashboardState extends State<Dashboard>  {
-  
+  String directory;
+  List file = new List();
   String buttonTitle = "";
   
   @override
   void initState() {
-    buttonTitle = "Paste URL here";
     super.initState();
+    buttonTitle = "Paste URL here";
   }
  
   final Shader linearGradient = LinearGradient(
@@ -64,7 +66,7 @@ class DashboardState extends State<Dashboard>  {
       Utils.showOSWiseAlert(context, "Invalid URL");
     }  
   }
-  
+    
   void changeButtonTitle(String title) {
     setState(() {
       buttonTitle = title;
@@ -121,6 +123,15 @@ class DashboardState extends State<Dashboard>  {
                 fontSize: 60.0,
                 fontWeight: FontWeight.bold,
                 foreground: Paint()..shader = linearGradient),
+            ),
+
+            FlatButton(
+              onPressed: () {
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Downloads())
+                );
+              }, 
+              child: Text("Downloads")
             ),
             
             Center(
