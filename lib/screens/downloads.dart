@@ -1,7 +1,9 @@
+import 'dart:html';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:io' as io;
 import 'package:ext_storage/ext_storage.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class Downloads extends StatefulWidget {
 
@@ -27,6 +29,11 @@ class DownloadsState extends State<Downloads> {
       files = io.Directory("$directory/InstaSaver").listSync();
       print(files);
     });
+  }
+
+  void checkFileIsOfImageOrVideoType(File file) {
+    List<String> fileParts = file.toString().split('?').toList();
+    print(fileParts);
   }
 
   @override 
