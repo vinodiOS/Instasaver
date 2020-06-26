@@ -26,37 +26,56 @@ class DownloadsState extends State<Downloads> {
   
   //Fetch files from app directory
   void _listofFiles() async {
+
+    List imageFiles = new List();
     var directory = await ExtStorage.getExternalStorageDirectory();
+    var allFiles = io.Directory("$directory/InstaSaver").listSync();
+    for (final file in allFiles) {
+      List<String> fileParts = file.path.split('.').toList();
+      if (fileParts.length > 1) {
+        if (fileParts[1] == "mp4") {
+          controllers.add(new VideoPlayerController.file(
+            file
+        ));
+        } else if (fileParts[1] == "png") {
+          imageFiles.add(file);
+        } else {
+          print("nothing match");
+        }
+      }
+    }
     setState(() {
-      var allFiles = io.Directory("$directory/InstaSaver").listSync();
-      for
+      files = imageFiles;
     });
   }
 
-  Future<Card> _getCard(File file) async {
-    List<String> fileParts = file.toString().split('.').toList();
-    print(fileParts);
-    if (fileParts[1] == "mp4") {
-      final uint8list = await VideoThumbnail.thumbnailData(
-        video: file.path,
-        imageFormat: ImageFormat.JPEG,
-        maxWidth: 128, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
-        quality: 25,
-      );
-      return new Card(
-        elevation: 3,
-        child: Image.memory(uint8list),
-      );
-    } else {
-      return new Card(
-        elevation: 3,
-        child: Image.file(file),
-      );
-    }
+  ListView _videoPlayer() {
+     return new ListView(
+          // Here's the magic. We convert our List<VideoPlayerController>
+          // into a List<Widget>.
+          children: controllers.map((controller) {
+            return new Container(
+              margin: new EdgeInsets.symmetric(vertical: 20.0),
+              // To display a single Video Player, you need to create a `Chewie` Widget.
+              // Since we want to show multiple videos, each item in the List will
+              // contain a Chewie player
+              child: Chewie(
+                controller: new ChewieController(
+                videoPlayerController: controller,
+                aspectRatio: 3 / 2,
+                autoInitialize: true,
+                autoPlay: false,
+                looping: true,
+              ),
+              ),
+            );
+          }).toList(),
+        );
+        
   }
 
-  _imageList() {
-    GridView.builder(
+  GridView _imageList() {
+    return GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
         itemBuilder: (_, index) {
           return new Card(
@@ -70,7 +89,9 @@ class DownloadsState extends State<Downloads> {
 
   @override 
   Widget build(BuildContext context) {
-    return Scaffold(
+    return new DefaultTabController(length: 2, 
+    child:  Scaffold(
+      
       appBar: AppBar(
         title: Text("Downloads"),
         bottom: TabBar(tabs:
@@ -82,10 +103,13 @@ class DownloadsState extends State<Downloads> {
       ),
       body: TabBarView(children: 
       [
-        _imageList()
+        _imageList(),
+        _videoPlayer()
       ]
       ),
 
+    )
     );
+
   }
 }
